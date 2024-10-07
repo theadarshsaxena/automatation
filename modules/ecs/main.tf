@@ -3,50 +3,50 @@ resource "aws_ecs_cluster" "ecs_cluster" {
 }
 
 # Define IAM Roles and Policies for ECS Task Execution
-# resource "aws_iam_role" "ecs_execution_role" {
-#   name = var.ecs_iam_role_name
+resource "aws_iam_role" "ecs_execution_role" {
+  name = var.ecs_iam_role_name
 
-#   assume_role_policy = jsonencode({
-#     Version = "2012-10-17"
-#     Statement = [
-#       {
-#         Action    = "sts:AssumeRole"
-#         Effect    = "Allow"
-#         Principal = {
-#           Service = "ecs-tasks.amazonaws.com"
-#         }
-#       },
-#     ]
-#   })
-# }
+  assume_role_policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [
+      {
+        Action    = "sts:AssumeRole"
+        Effect    = "Allow"
+        Principal = {
+          Service = "ecs-tasks.amazonaws.com"
+        }
+      },
+    ]
+  })
+}
 
-# resource "aws_iam_role_policy_attachment" "ecs_execution_role_policy" {
-#   role       = aws_iam_role.ecs_execution_role.name
-#   policy_arn  = "arn:aws:iam::aws:policy/service-role/AmazonECSTaskExecutionRolePolicy"
-# }
+resource "aws_iam_role_policy_attachment" "ecs_execution_role_policy" {
+  role       = aws_iam_role.ecs_execution_role.name
+  policy_arn  = "arn:aws:iam::aws:policy/service-role/AmazonECSTaskExecutionRolePolicy"
+}
 
-# resource "aws_iam_role" "ecs_task_role" {
-#   name = "ecs_task_role"
+resource "aws_iam_role" "ecs_task_role" {
+  name = "ecs_task_role"
 
-#   assume_role_policy = jsonencode({
-#     Version = "2012-10-17"
-#     Statement = [
-#       {
-#         Action    = "sts:AssumeRole"
-#         Effect    = "Allow"
-#         Principal = {
-#           Service = "ecs-tasks.amazonaws.com"
-#         }
-#       },
-#     ]
-#   })
-# }
+  assume_role_policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [
+      {
+        Action    = "sts:AssumeRole"
+        Effect    = "Allow"
+        Principal = {
+          Service = "ecs-tasks.amazonaws.com"
+        }
+      },
+    ]
+  })
+}
 
 # # Define ECS Task Definition
 resource "aws_ecs_task_definition" "example" {
   family                   = var.task_definition_family
-  execution_role_arn       = "arn:aws:iam::130248996185:role/ecsTaskExecutionRole"
-  task_role_arn            = "arn:aws:iam::130248996185:role/ecsTaskExecutionRole"
+  execution_role_arn       = aws_iam_role.ecs_execution_role.arn
+  task_role_arn            = aws_iam_role.ecs_execution_role.arn
   network_mode             = "awsvpc"
   requires_compatibilities = ["FARGATE"]
   cpu                      = "256"
@@ -54,7 +54,7 @@ resource "aws_ecs_task_definition" "example" {
 
   container_definitions = jsonencode([{
     name      = "nginx"
-    image     = "nginx:latest"  # Replace with your container image
+    image     = "nginx:900.0.0"  # Replace with your container image
     essential = true
     portMappings = [
       {
@@ -72,23 +72,23 @@ resource "aws_ecs_service" "ecs_service" {
   desired_count   = 1
   launch_type     = "FARGATE"
   network_configuration {
-    subnets          = ["subnet-0b6665ee08118ffb3"]
-    security_groups  = ["sg-065de8645ee414641"]
+    subnets          = ["subnet-01f90cb9bce22717e"]
+    security_groups  = ["sg-0b84262ba2f02ebda"]
     assign_public_ip = true
   }
   depends_on = [aws_ecs_task_definition.example]
 }
 
-resource "aws_ecs_service" "ecs_service_duplicate" {
-  name            = "nginx1"
-  cluster         = aws_ecs_cluster.ecs_cluster.id
-  task_definition = aws_ecs_task_definition.example.arn
-  desired_count   = 1
-  launch_type     = "FARGATE"
-  network_configuration {
-    subnets          = ["subnet-0b6665ee08118ffb3"]
-    security_groups  = ["sg-065de8645ee414641"]
-    assign_public_ip = true
-  }
-  depends_on = [aws_ecs_task_definition.example]
-}
+# resource "aws_ecs_service" "ecs_service_duplicate" {
+#   name            = "nginx1"
+#   cluster         = aws_ecs_cluster.ecs_cluster.id
+#   task_definition = aws_ecs_task_definition.example.arn
+#   desired_count   = 1
+#   launch_type     = "FARGATE"
+#   network_configuration {
+#     subnets          = ["subnet-01f90cb9bce22717e"]
+#     security_groups  = ["sg-065de8645ee414641"]
+#     assign_public_ip = true
+#   }
+#   depends_on = [aws_ecs_task_definition.example]
+# }

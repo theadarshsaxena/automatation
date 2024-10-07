@@ -52,28 +52,30 @@ resource "aws_sns_topic_subscription" "email_subscription" {
 #     Create cloudwatch metric alarm for ECS task
 # -------------------------------------------------------------
 
-data "external" "ecs_services" {
-  program = ["bash", "${path.module}/fetch_services.sh", var.ecs_cluster_name, "us-east-1"]
+variable "ecs_services" {
+  description = "list of services"
+  type = list(string)
+  default = ["example-nginx"]
 }
 
-resource "aws_cloudwatch_metric_alarm" "ecs_cpu_usage_alarm" {
-  for_each = toset(jsondecode(data.external.ecs_services.result.services))
-  alarm_name          = "ECS-Alarm-${var.ecs_cluster_name}-${split("/", each.value)[length(split("/", each.value)) - 1]}"
-  comparison_operator = "GreaterThanThreshold"
-  evaluation_periods  = "1"
-  metric_name         = "CPUUtilization"
-  namespace           = "AWS/ECS"
-  period              = "30"  # 1 minute
-  statistic           = "Maximum"
-  threshold           = "1"
+# resource "aws_cloudwatch_metric_alarm" "ecs_cpu_usage_alarm" {
+#   for_each = toset(var.ecs_services)
+#   alarm_name          = "ECS-Alarm-${var.ecs_cluster_name}-${split("/", each.value)[length(split("/", each.value)) - 1]}"
+#   comparison_operator = "GreaterThanThreshold"
+#   evaluation_periods  = "1"
+#   metric_name         = "CPUUtilization"
+#   namespace           = "AWS/ECS"
+#   period              = "30"  # 1 minute
+#   statistic           = "Maximum"
+#   threshold           = "1"
 
-  alarm_description   = "Alarm for CPU > 80 for Cluster: ${var.ecs_cluster_name} & Service: ${split("/", each.value)[length(split("/", each.value)) - 1]}"
-  alarm_actions       = [aws_sns_topic.this.arn]
-  insufficient_data_actions = []
-  ok_actions          = []
+#   alarm_description   = "Alarm for CPU > 80 for Cluster: ${var.ecs_cluster_name} & Service: ${split("/", each.value)[length(split("/", each.value)) - 1]}"
+#   alarm_actions       = [aws_sns_topic.this.arn]
+#   insufficient_data_actions = []
+#   ok_actions          = []
 
-  dimensions = {
-    ClusterName = var.ecs_cluster_name
-    ServiceName = split("/", each.value)[length(split("/", each.value)) - 1]
-  }
-}
+#   dimensions = {
+#     ClusterName = var.ecs_cluster_name
+#     ServiceName = split("/", each.value)[length(split("/", each.value)) - 1]
+#   }
+# }

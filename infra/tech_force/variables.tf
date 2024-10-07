@@ -15,3 +15,9 @@ variable "task_definition_family_name" {
   type        = string
   default     = "nginx-example"
 }
+
+variable "event_bridge_rule_name" {
+  description = "rule name for event bridge used in the ecs_failure_alarm"
+  type        = string
+  default     = "ecs_failure_detection_rule"
+}
