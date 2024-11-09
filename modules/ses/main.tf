@@ -19,11 +19,3 @@ resource "aws_ses_domain_mail_from" "domain_from" {
   mail_from_domain = "noreply.${each.value}"
   depends_on = [ aws_ses_domain_identity.domain_identity ]
 }
-
-# output "cname_records" {
-#   value = aws_ses_domain_dkim.domain_dkim.dkim_tokens
-# }
-
-# output "verification_token" {
-#   value = aws_ses_domain_identity.domain_identity.verification_token
-# }
